@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To My Mother — Volume II</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --gold: #e8c97a;
+            --rose: #c97a9e;
+            --cream: #f5efe0;
+            --dark: #0a0608;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Lato', sans-serif;
+        }
+
+        /* ── FULLSCREEN STAGE ── */
+        #stage {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── SLIDES ── */
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 2s ease;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        .slide.leaving {
+            opacity: 0;
+            z-index: 2;
+            transition: opacity 2s ease;
+        }
+
+        .slide-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ── 8 varied Ken Burns animations ── */
+        @keyframes kb-zoom-in {
+            from {
+                transform: scale(1.00) translate(0%, 0%);
+            }
+
+            to {
+                transform: scale(1.14) translate(-1.5%, -1%);
+            }
+        }
+
+        @keyframes kb-zoom-out {
+            from {
+                transform: scale(1.12) translate(0%, 0%);
+            }
+
+            to {
+                transform: scale(1.00) translate(1%, 0.5%);
+            }
+        }
+
+        @keyframes kb-pan-left {
+            from {
+                transform: scale(1.10) translate(3%, 0%);
+            }
+
+            to {
+                transform: scale(1.10) translate(-3%, 0%);
+            }
+        }
+
+        @keyframes kb-pan-right {
+            from {
+                transform: scale(1.10) translate(-3%, 0%);
+            }
+
+            to {
+                transform: scale(1.10) translate(3%, 0%);
+            }
+        }
+
+        @keyframes kb-pan-up {
+            from {
+                transform: scale(1.10) translate(0%, 3%);
+            }
+
+            to {
+                transform: scale(1.10) translate(0%, -3%);
+            }
+        }
+
+        @keyframes kb-pan-down {
+            from {
+                transform: scale(1.10) translate(0%, -3%);
+            }
+
+            to {
+                transform: scale(1.10) translate(0%, 3%);
+            }
+        }
+
+        @keyframes kb-zoom-tl {
+            from {
+                transform: scale(1.00) translate(2%, 2%);
+            }
+
+            to {
+                transform: scale(1.14) translate(-2%, -2%);
+            }
+        }
+
+        @keyframes kb-zoom-br {
+            from {
+                transform: scale(1.00) translate(-2%, -2%);
+            }
+
+            to {
+                transform: scale(1.14) translate(2%, 2%);
+            }
+        }
+
+        .slide.active .slide-img {
+            animation-duration: 12s;
+            animation-timing-function: ease;
+            animation-fill-mode: forwards;
+        }
+
+        .slide[data-kb="0"].active .slide-img {
+            animation-name: kb-zoom-in;
+        }
+
+        .slide[data-kb="1"].active .slide-img {
+            animation-name: kb-zoom-out;
+        }
+
+        .slide[data-kb="2"].active .slide-img {
+            animation-name: kb-pan-left;
+        }
+
+        .slide[data-kb="3"].active .slide-img {
+            animation-name: kb-pan-right;
+        }
+
+        .slide[data-kb="4"].active .slide-img {
+            animation-name: kb-pan-up;
+        }
+
+        .slide[data-kb="5"].active .slide-img {
+            animation-name: kb-pan-down;
+        }
+
+        .slide[data-kb="6"].active .slide-img {
+            animation-name: kb-zoom-tl;
+        }
+
+        .slide[data-kb="7"].active .slide-img {
+            animation-name: kb-zoom-br;
+        }
+
+        /* ── OVERLAY GRADIENT ── */
+        .slide::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to top, rgba(0, 0, 0, .80) 0%, rgba(0, 0, 0, .18) 45%, transparent 70%),
+                linear-gradient(to bottom, rgba(0, 0, 0, .50) 0%, transparent 28%);
+            z-index: 3;
+        }
+
+        /* ── VIGNETTE ── */
+        #vignette {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, .78) 100%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* ── FILM GRAIN ── */
+        #grain {
+            position: fixed;
+            inset: 0;
+            z-index: 11;
+            pointer-events: none;
+            opacity: .04;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            animation: grain .14s steps(1) infinite;
+        }
+
+        @keyframes grain {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            10% {
+                transform: translate(-2%, -3%);
+            }
+
+            20% {
+                transform: translate(3%, 1%);
+            }
+
+            30% {
+                transform: translate(-1%, 4%);
+            }
+
+            40% {
+                transform: translate(2%, -2%);
+            }
+
+            50% {
+                transform: translate(-3%, 2%);
+            }
+
+            60% {
+                transform: translate(1%, -4%);
+            }
+
+            70% {
+                transform: translate(-2%, 3%);
+            }
+
+            80% {
+                transform: translate(3%, -1%);
+            }
+
+            90% {
+                transform: translate(-1%, 1%);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* ── LIGHT LEAK ── */
+        #lightleak {
+            position: fixed;
+            inset: 0;
+            z-index: 9;
+            pointer-events: none;
+            opacity: 0;
+            background: radial-gradient(ellipse at 80% 10%, rgba(232, 201, 122, .16) 0%, transparent 62%);
+            animation: leakpulse 16s ease-in-out infinite;
+        }
+
+        @keyframes leakpulse {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            38% {
+                opacity: 1;
+            }
+
+            58% {
+                opacity: .55;
+            }
+        }
+
+        /* ── TITLE CARD ── */
+        #title-card {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .93);
+            opacity: 1;
+            transition: opacity 2.2s ease;
+        }
+
+        #title-card.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .title-eyebrow {
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
+            color: rgba(232, 201, 122, .6);
+            font-size: clamp(.7rem, 1.4vw, 1rem);
+            letter-spacing: .5em;
+            text-transform: uppercase;
+            animation: fadeSlideUp 1.4s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .title-divider {
+            width: 80px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold), transparent);
+            margin: 1.2rem auto;
+            animation: fadeSlideUp 1.4s .15s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .title-line {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: clamp(2.4rem, 6.5vw, 6rem);
+            letter-spacing: .05em;
+            text-align: center;
+            line-height: 1.12;
+            animation: fadeSlideUp 1.4s .3s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .title-sub {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: rgba(245, 239, 224, .55);
+            font-size: clamp(.85rem, 1.8vw, 1.2rem);
+            margin-top: .9rem;
+            text-align: center;
+            animation: fadeSlideUp 1.4s .45s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .title-play-btn {
+            margin-top: 3rem;
+            padding: .78rem 2.8rem;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            background: transparent;
+            font-family: 'Lato', sans-serif;
+            font-size: .9rem;
+            letter-spacing: .26em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background .3s, color .3s, box-shadow .3s;
+            animation: fadeSlideUp 1.4s .6s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .title-play-btn:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 30px rgba(232, 201, 122, .35);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(26px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── SUBTITLE AREA ── */
+        #subtitle-wrap {
+            position: fixed;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            width: 86vw;
+            max-width: 940px;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #subtitle-text {
+            display: inline-block;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            line-height: 1.5;
+            color: #fff;
+            text-shadow: 0 0 50px rgba(232, 201, 122, .5), 0 2px 20px rgba(0, 0, 0, .95), 0 1px 5px rgba(0, 0, 0, 1);
+            letter-spacing: .02em;
+            transition: opacity .4s ease, transform .4s ease;
+            opacity: 0;
+            transform: translateY(12px);
+            padding: .5rem 1.4rem;
+            background: rgba(0, 0, 0, .15);
+            border-radius: 4px;
+        }
+
+        #subtitle-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── PROGRESS BAR ── */
+        #progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(to right, var(--rose), var(--gold));
+            z-index: 40;
+            transition: width .35s linear;
+            box-shadow: 0 0 12px rgba(232, 201, 122, .7);
+        }
+
+        /* ── CORNER ORNAMENTS ── */
+        .ornament {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            z-index: 12;
+            pointer-events: none;
+            opacity: .38;
+        }
+
+        .ornament-tl {
+            top: 16px;
+            left: 16px;
+            border-top: 1px solid var(--gold);
+            border-left: 1px solid var(--gold);
+        }
+
+        .ornament-tr {
+            top: 16px;
+            right: 16px;
+            border-top: 1px solid var(--gold);
+            border-right: 1px solid var(--gold);
+        }
+
+        .ornament-bl {
+            bottom: 20px;
+            left: 16px;
+            border-bottom: 1px solid var(--gold);
+            border-left: 1px solid var(--gold);
+        }
+
+        .ornament-br {
+            bottom: 20px;
+            right: 16px;
+            border-bottom: 1px solid var(--gold);
+            border-right: 1px solid var(--gold);
+        }
+
+        /* ── QUOTE ── */
+        #quote {
+            position: fixed;
+            top: 4.5%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(.65rem, 1.3vw, .95rem);
+            color: rgba(232, 201, 122, .38);
+            letter-spacing: .12em;
+            text-align: center;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* ── FADE OVERLAY ── */
+        #fade-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 45;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .7s ease;
+        }
+
+        #fade-overlay.flash {
+            opacity: 1;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TITLE CARD -->
+    <div id="title-card">
+        <div class="title-eyebrow">A Cinematic Tribute</div>
+        <div class="title-divider"></div>
+        <div class="title-line">To My Mother</div>
+        <div class="title-sub">with all the love that words cannot hold</div>
+        <button class="title-play-btn" id="play-btn">▶ &nbsp; Play</button>
+    </div>
+
+    <!-- STAGE -->
+    <div id="stage"></div>
+
+    <!-- OVERLAYS -->
+    <div id="vignette"></div>
+    <div id="grain"></div>
+    <div id="lightleak"></div>
+    <div id="fade-overlay"></div>
+
+    <!-- ORNAMENTS -->
+    <div class="ornament ornament-tl"></div>
+    <div class="ornament ornament-tr"></div>
+    <div class="ornament ornament-bl"></div>
+    <div class="ornament ornament-br"></div>
+
+    <!-- QUOTE -->
+    <div id="quote">"The most beautiful word on the lips of mankind is the word 'Mother'"</div>
+
+    <!-- SUBTITLE -->
+    <div id="subtitle-wrap">
+        <span id="subtitle-text"></span>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div id="progress-bar"></div>
+
+    <!-- AUDIO -->
+    <audio id="audio" preload="auto">
+        <source src="verse-2.mp3" type="audio/mpeg" />
+    </audio>
+
+    <script>
+        /* ═══════════════════════════════════════════════════════
+           CONFIG
+        ═══════════════════════════════════════════════════════ */
+        const IMAGES = [
+            '1.png', '2.png', '3.png', '4.png', '5.png', '6.png',
+            '7.png', '8.png', '9.png', '10.png', '11.png', '12.png',
+            '13.png', '14.png', '15.png', '16.png', '17.png', '18.png',
+            '19.png', '20.png', '21.png', '22.png', '23.png', '24.png'
+        ];
+
+        // 8 Ken Burns patterns rotated across 24 slides
+        const KB_PATTERNS = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7];
+
+        // Song total duration: ~290 seconds (4 min 50 sec)
+        // Last SRT cue ends at 04:50,040 = 290.040s
+        const SONG_DURATION_SEC = 290;
+        const SLIDE_DURATION_MS = Math.round((SONG_DURATION_SEC / IMAGES.length) * 1000); // ~12083ms per slide
+
+        /* ═══════════════════════════════════════════════════════
+           SRT SUBTITLE DATA — source: verse-2.srt
+           All 47 cues, timestamps: MM*60 + SS + ms/1000 (exact)
+           Adjacent cues forming one lyrical line are merged:
+             merged start = first cue start, end = last cue end.
+           Two-line lyrics rendered with \n → <br>.
+        ═══════════════════════════════════════════════════════ */
+        const SRT = [
+
+            // ── VERSE 1 ────────────────────────────────────────
+            // Cue 1: 00:00:15,880 → 00:00:22,280  (two-line cue in SRT)
+            {
+                s: 15.880, e: 22.280,
+                t: "When the world was bright and wide,\nyou were joy right by my side."
+            },
+            // Cue 2: 00:00:23,080 → 00:00:25,600
+            {
+                s: 23.080, e: 25.600,
+                t: "Tiny footsteps, share for cheers."
+            },
+            // Cue 3: 00:00:26,240 → 00:00:29,560
+            {
+                s: 26.240, e: 29.560,
+                t: "You wiped away my little fears."
+            },
+            // Cue 4: 00:00:30,000 → 00:00:36,480  (two-line cue in SRT)
+            {
+                s: 30.000, e: 36.480,
+                t: "Through every laugh and every climb,\nyou gave me love, you gave me time."
+            },
+            // Cue 5: 00:00:37,280 → 00:00:40,160
+            {
+                s: 37.280, e: 40.160,
+                t: "In your arms, I found my place."
+            },
+            // Cue 6: 00:00:40,560 → 00:00:43,720
+            {
+                s: 40.560, e: 43.720,
+                t: "Sunshine smiling on your face."
+            },
+            // Cue 7: 00:00:43,800 → 00:00:47,440
+            {
+                s: 43.800, e: 47.440,
+                t: "You're the whisper in my joy,"
+            },
+            // Cue 8: 00:00:47,760 → 00:00:51,640
+            {
+                s: 47.760, e: 51.640,
+                t: "the light in every starry sky."
+            },
+
+            // ── CHORUS 1 ───────────────────────────────────────
+            // Cue 9:  00:00:52,920 → 00:00:58,015
+            {
+                s: 52.920, e: 58.015,
+                t: "Oh, mother, your hands are my home."
+            },
+            // Cue 10: 00:00:58,040 → 00:01:04,600
+            {
+                s: 58.040, e: 64.600,
+                t: "Wherever I wander, I'm never alone."
+            },
+            // Cue 11: 00:01:05,640 → 00:01:11,600
+            {
+                s: 65.640, e: 71.600,
+                t: "Your love is a river that joyfully flows,"
+            },
+            // Cues 12+13 merged: 00:01:12,880 → 00:01:20,040
+            {
+                s: 72.880, e: 80.040,
+                t: "a garden of dreams where\nmy whole life grows."
+            },
+            // Cue 14: 00:01:20,920 → 00:01:26,520
+            {
+                s: 80.920, e: 86.520,
+                t: "If I rise, it's because you believe."
+            },
+            // Cue 15: 00:01:27,080 → 00:01:35,615
+            {
+                s: 87.080, e: 95.615,
+                t: "Every hope in my heart you can see."
+            },
+            // Cue 16: 00:01:35,640 → 00:01:40,920
+            {
+                s: 95.640, e: 100.920,
+                t: "Oh, mother, no words can say."
+            },
+            // Cue 17: 00:01:42,880 → 00:01:47,720
+            {
+                s: 102.880, e: 107.720,
+                t: "How I thank you this mother's day."
+            },
+
+            // ── VERSE 2 ────────────────────────────────────────
+            // Cue 18: 00:02:00,000 → 00:02:04,080  (2*60 = 120)
+            {
+                s: 120.000, e: 124.080,
+                t: "You turned your strength into my smile."
+            },
+            // Cue 19: 00:02:04,280 → 00:02:07,600
+            {
+                s: 124.280, e: 127.600,
+                t: "Walk 10,000 blissful miles."
+            },
+            // Cue 20: 00:02:07,800 → 00:02:10,720
+            {
+                s: 127.800, e: 130.720,
+                t: "Late night's stories, loving eyes."
+            },
+            // Cue 21: 00:02:11,080 → 00:02:14,880
+            {
+                s: 131.080, e: 134.880,
+                t: "Joyful tears behind caring eyes."
+            },
+            // Cue 22: 00:02:15,080 → 00:02:18,040
+            {
+                s: 135.080, e: 138.040,
+                t: "Every lesson, softly told."
+            },
+            // Cue 23: 00:02:18,240 → 00:02:21,760
+            {
+                s: 138.240, e: 141.760,
+                t: "More precious now than crowns of gold."
+            },
+            // Cue 24: 00:02:21,800 → 00:02:28,680  (two-line cue in SRT)
+            {
+                s: 141.800, e: 148.680,
+                t: "Your gentle voice lights up my way,\nguiding every cheerful day."
+            },
+            // Cue 25: 00:02:28,880 → 00:02:32,640
+            {
+                s: 148.880, e: 152.640,
+                t: "You're the anchor in the breeze,"
+            },
+            // Cue 26: 00:02:32,680 → 00:02:37,480
+            {
+                s: 152.680, e: 157.480,
+                t: "the safe and gentle ease."
+            },
+
+            // ── CHORUS 2 ───────────────────────────────────────
+            // Cue 27: 00:02:37,800 → 00:02:42,575
+            {
+                s: 157.800, e: 162.575,
+                t: "Oh, mother, your hands are my home."
+            },
+            // Cue 28: 00:02:42,600 → 00:02:49,680
+            {
+                s: 162.600, e: 169.680,
+                t: "Wherever I wonder, I'm never alone."
+            },
+            // Cue 29: 00:02:50,560 → 00:02:56,960
+            {
+                s: 170.560, e: 176.960,
+                t: "Your love is a river that joyfully flows."
+            },
+            // Cue 30: 00:02:57,840 → 00:03:04,640  (two-line cue in SRT)
+            {
+                s: 177.840, e: 184.640,
+                t: "A garden of dreams where\nmy whole life grows."
+            },
+            // Cue 31: 00:03:05,760 → 00:03:10,680
+            {
+                s: 185.760, e: 190.680,
+                t: "If I rise, it's because you believe."
+            },
+            // Cues 32+33 merged: 00:03:11,800 → 00:03:18,840
+            {
+                s: 191.800, e: 198.840,
+                t: "Every hope in my heart,\nthat you can see."
+            },
+            // Cue 34: 00:03:20,680 → 00:03:25,920
+            {
+                s: 200.680, e: 205.920,
+                t: "Oh, mother, no words can say."
+            },
+            // Cue 35: 00:03:27,800 → 00:03:32,440
+            {
+                s: 207.800, e: 212.440,
+                t: "How I thank you this mother's day."
+            },
+
+            // ── BRIDGE ─────────────────────────────────────────
+            // Cues 36+37 merged: 00:03:33,800 → 00:03:41,040
+            {
+                s: 213.800, e: 221.040,
+                t: "If I could give the world to you,\nit still wouldn't match all you do."
+            },
+            // Cue 38: 00:03:41,280 → 00:03:44,520
+            {
+                s: 221.280, e: 224.520,
+                t: "Every heart be joyfully praised."
+            },
+            // Cue 39: 00:03:44,680 → 00:03:51,680  (two-line cue in SRT)
+            {
+                s: 224.680, e: 231.680,
+                t: "May your life be filled with brighter days."
+            },
+
+            // ── FINAL CHORUS ───────────────────────────────────
+            // Cue 40: 00:03:52,520 → 00:03:57,520  (3*60+52.520 = 232.520)
+            {
+                s: 232.520, e: 237.520,
+                t: "Oh, Mom, your hands are my home."
+            },
+            // Cue 41: 00:03:58,240 → 00:04:04,455
+            {
+                s: 238.240, e: 244.455,
+                t: "Your love is the joy I've always known."
+            },
+            // Cue 42: 00:04:04,480 → 00:04:11,560  (4*60+4.480 = 244.480)
+            {
+                s: 244.480, e: 251.560,
+                t: "Through every season, come what may."
+            },
+            // Cue 43: 00:04:12,480 → 00:04:18,935
+            {
+                s: 252.480, e: 258.935,
+                t: "I'll carry your love every day."
+            },
+            // Cue 44: 00:04:18,960 → 00:04:25,960
+            {
+                s: 258.960, e: 265.960,
+                t: "Forever thankful, forever true."
+            },
+            // Cue 45: 00:04:26,520 → 00:04:33,480
+            {
+                s: 266.520, e: 273.480,
+                t: "The best of me comes from you."
+            },
+            // Cue 46: 00:04:34,800 → 00:04:40,200
+            {
+                s: 274.800, e: 280.200,
+                t: "Oh, mother, hear me say,"
+            },
+            // Cue 47: 00:04:42,520 → 00:04:50,040
+            {
+                s: 282.520, e: 290.040,
+                t: "I love you more this mother's day."
+            },
+
+        ];
+
+        /* ═══════════════════════════════════════════════════════
+           BUILD DOM
+        ═══════════════════════════════════════════════════════ */
+        const stage = document.getElementById('stage');
+        const subText = document.getElementById('subtitle-text');
+        const progressBar = document.getElementById('progress-bar');
+        const fadeOverlay = document.getElementById('fade-overlay');
+        const audio = document.getElementById('audio');
+
+        IMAGES.forEach((src, i) => {
+            const div = document.createElement('div');
+            div.className = 'slide' + (i === 0 ? ' active' : '');
+            div.dataset.index = i;
+            div.dataset.kb = KB_PATTERNS[i];
+            const img = document.createElement('img');
+            img.className = 'slide-img';
+            img.src = src;
+            img.alt = '';
+            img.loading = i <= 2 ? 'eager' : 'lazy';
+            div.appendChild(img);
+            stage.appendChild(div);
+        });
+
+        const slides = [...document.querySelectorAll('.slide')];
+
+        /* ═══════════════════════════════════════════════════════
+           STATE
+        ═══════════════════════════════════════════════════════ */
+        let currentSlide = 0;
+        let slideInterval = null;
+        let isPaused = false;
+
+        /* ═══════════════════════════════════════════════════════
+           SLIDE ENGINE
+        ═══════════════════════════════════════════════════════ */
+        function goToSlide(idx) {
+            const prev = slides[currentSlide];
+            prev.classList.remove('active');
+            prev.classList.add('leaving');
+            setTimeout(() => prev.classList.remove('leaving'), 2100);
+
+            currentSlide = ((idx % IMAGES.length) + IMAGES.length) % IMAGES.length;
+
+            const cur = slides[currentSlide];
+            cur.classList.add('active');
+
+            // Re-trigger Ken Burns animation
+            const img = cur.querySelector('.slide-img');
+            img.style.animation = 'none';
+            img.offsetHeight;
+            img.style.animation = '';
+
+            // Preload next
+            const nextIdx = (currentSlide + 1) % IMAGES.length;
+            const preload = new Image();
+            preload.src = IMAGES[nextIdx];
+        }
+
+        function nextSlide() { goToSlide(currentSlide + 1); }
+        function prevSlide() { goToSlide(currentSlide - 1); }
+
+        function startAutoSlide() {
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, SLIDE_DURATION_MS);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           SUBTITLE ENGINE  (audio time-driven, frame-perfect)
+        ═══════════════════════════════════════════════════════ */
+        let lastSubIdx = -1;
+
+        function updateSubtitle() {
+            const t = audio.currentTime;
+            let found = -1;
+            for (let i = 0; i < SRT.length; i++) {
+                if (t >= SRT[i].s && t < SRT[i].e) { found = i; break; }
+            }
+            if (found !== lastSubIdx) {
+                lastSubIdx = found;
+                if (found >= 0) {
+                    // Use innerHTML to render \n as <br> for two-line lyrics
+                    subText.innerHTML = SRT[found].t.replace(/\n/g, '<br>');
+                    subText.classList.add('visible');
+                } else {
+                    subText.classList.remove('visible');
+                }
+            }
+        }
+
+        // Use RAF for frame-perfect subtitle sync
+        let rafId = null;
+        function subtitleLoop() {
+            updateSubtitle();
+            if (audio.duration) {
+                progressBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
+            }
+            rafId = requestAnimationFrame(subtitleLoop);
+        }
+
+        // Keyboard — Space to pause, arrows to jump, M to mute
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isPaused) {
+                    isPaused = false;
+                    startAutoSlide();
+                    audio.play();
+                } else {
+                    isPaused = true;
+                    clearInterval(slideInterval);
+                    audio.pause();
+                }
+            }
+            if (e.code === 'ArrowRight') { goToSlide(currentSlide + 1); if (!isPaused) startAutoSlide(); }
+            if (e.code === 'ArrowLeft') { goToSlide(currentSlide - 1); if (!isPaused) startAutoSlide(); }
+            if (e.code === 'KeyM') { audio.muted = !audio.muted; }
+        });
+
+        /* ═══════════════════════════════════════════════════════
+           PLAY BUTTON (title card)
+        ═══════════════════════════════════════════════════════ */
+        document.getElementById('play-btn').addEventListener('click', () => {
+            const tc = document.getElementById('title-card');
+            tc.classList.add('hidden');
+
+            // Flash transition
+            fadeOverlay.classList.add('flash');
+            setTimeout(() => {
+                fadeOverlay.style.transition = 'opacity 1.8s ease';
+                fadeOverlay.classList.remove('flash');
+            }, 60);
+
+            // Fade audio in
+            audio.volume = 0;
+            audio.play().catch(() => { });
+            let vol = 0;
+            const fadeIn = setInterval(() => {
+                vol = Math.min(vol + 0.035, 1);
+                audio.volume = vol;
+                if (vol >= 1) clearInterval(fadeIn);
+            }, 80);
+
+            // Start slideshow + subtitle RAF loop
+            startAutoSlide();
+            rafId = requestAnimationFrame(subtitleLoop);
+        });
+
+        /* ═══════════════════════════════════════════════════════
+           AUDIO END
+        ═══════════════════════════════════════════════════════ */
+        audio.addEventListener('ended', () => {
+            clearInterval(slideInterval);
+            cancelAnimationFrame(rafId);
+            subText.classList.remove('visible');
+
+            // Fade to black finale
+            fadeOverlay.style.transition = 'opacity 3.5s ease';
+            fadeOverlay.classList.add('flash');
+
+            // After fade to black, show end card
+            setTimeout(() => {
+                const endCard = document.createElement('div');
+                endCard.style.cssText = `
+      position:fixed;inset:0;z-index:60;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      pointer-events:none;
+    `;
+                endCard.innerHTML = `
+      <div style="font-family:'Playfair Display',serif;font-style:italic;
+        color:rgba(232,201,122,.85);font-size:clamp(1rem,2.5vw,1.6rem);
+        letter-spacing:.15em;text-align:center;opacity:0;
+        transition:opacity 2s ease;margin-bottom:.8rem;">
+        I love you more,
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-weight:700;
+        color:var(--gold);font-size:clamp(2rem,5vw,4rem);letter-spacing:.05em;
+        text-align:center;opacity:0;transition:opacity 2s ease 1s;">
+        This Mother's Day ♡
+      </div>
+    `;
+                document.body.appendChild(endCard);
+                const lines = endCard.querySelectorAll('div');
+                requestAnimationFrame(() => { lines.forEach(l => l.style.opacity = 1); });
+            }, 3600);
+        });
+    </script>
+</body>
+
+</html>
